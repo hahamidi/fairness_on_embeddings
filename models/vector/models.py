@@ -1,9 +1,9 @@
 import torch.nn as nn
 import torch.nn.init as init
 
-class CustomModel(nn.Module):
+class MLPModel(nn.Module):
     def __init__(self, embeddings_size, hidden_layer_sizes, dropout_rate, num_classes):
-        super(CustomModel, self).__init__()
+        super(MLPModel, self).__init__()
 
         layers = []
         input_size = embeddings_size
