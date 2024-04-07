@@ -118,7 +118,7 @@ class ImageXraySensitive(Dataset):
 
 if __name__ == "__main__":
     # Test the class
-    dataset = ImageXrayDataset(dataframe_path="./dataset/MIMIC/mimic_test_df.csv", path_image="/datasets/mimic-cxr/physionet.org/files/mimic-cxr-jpg/2.0.0/", finding="any")
+    dataset = ImageXrayDataset(dataframe_path="./dataset/mimic/mimic_test_df.csv", path_image="/datasets/mimic-cxr/physionet.org/files/mimic-cxr-jpg/2.0.0/", finding="any")
     print(dataset[0])
 
 
