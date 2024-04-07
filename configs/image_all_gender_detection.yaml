@@ -29,7 +29,7 @@ data: # data.module.DataModule
       datasets:
         - class_path:  data.image.dataset_class.ImageXraySensitive
           init_args:
-            dataframe_path: ./dataset/MIMIC/mimic_train_df.csv
+            dataframe_path: ./dataset/mimic/mimic_train_df.csv
             path_image: /datasets/mimic-cxr/physionet.org/files/mimic-cxr-jpg/2.0.0/
             sensitive_label: 'gender'
             sensitive_values: ['M', 'F']
@@ -85,7 +85,7 @@ data: # data.module.DataModule
       datasets:
         - class_path:  data.image.dataset_class.ImageXraySensitive
           init_args:
-            dataframe_path: ./dataset/MIMIC/mimic_validation_df.csv
+            dataframe_path: ./dataset/mimic/mimic_validation_df.csv
             path_image: /datasets/mimic-cxr/physionet.org/files/mimic-cxr-jpg/2.0.0/
             sensitive_label: 'gender'
             sensitive_values: ['M', 'F']
@@ -134,7 +134,7 @@ data: # data.module.DataModule
       datasets:
         - class_path:  data.image.dataset_class.ImageXraySensitive
           init_args:
-            dataframe_path: ./dataset/MIMIC/mimic_test_df.csv
+            dataframe_path: ./dataset/mimic/mimic_test_df.csv
             path_image: /datasets/mimic-cxr/physionet.org/files/mimic-cxr-jpg/2.0.0/
             sensitive_label: 'gender'
             sensitive_values: ['M', 'F']

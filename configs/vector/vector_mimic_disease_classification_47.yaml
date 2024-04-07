@@ -1,0 +1,59 @@
+seed_everything: 47
+trainer:
+
+  default_root_dir: ./results/vector_mimic_disease_classification_47
+  accelerator: cuda
+  devices: 1
+  log_every_n_steps: 1
+  max_epochs: 100
+
+  callbacks:
+  - class_path: lightning.pytorch.callbacks.RichProgressBar
+  - class_path: lightning.pytorch.callbacks.EarlyStopping
+    init_args:
+        monitor: 'val_loss'
+        patience: 5
+        mode: 'min'  # or 'max' depending on your metric
+  - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+    init_args:
+        monitor: 'val_loss'
+        mode: 'min'  # or 'max' depending on your metric
+        save_top_k: 1  # save only the best checkpoint
+        dirpath: './results/vector_mimic_disease_classification_47/checkpoints/'
+        filename: 'best_val_loss-{epoch:02d}-{val_loss:.4f}'
+  
+data: # data.moudle.DataModule
+  train_dataset:
+    class_path: data.vector.dataset_class.VectorXrayDataset
+    init_args:
+      dataframe_path: ./dataset/mimic/mimic_train_df.csv
+      path_vector: ./dataset/vector_embeddings/
+  val_dataset:
+    class_path: data.vector.dataset_class.VectorXrayDataset
+    init_args:
+      dataframe_path: ./dataset/mimic/mimic_validation_df.csv
+      path_vector: ./dataset/vector_embeddings/
+  test_dataset:
+    class_path: data.vector.dataset_class.VectorXrayDataset
+    init_args:
+      dataframe_path: ./dataset/mimic/mimic_test_df.csv
+      path_vector: ./dataset/vector_embeddings/
+
+  batch_size: 48
+  num_workers: 38
+  prediction_on: "test"
+
+
+model: # models.module.CLS
+  model:
+    class_path: models.vector.models.MLPModel
+    init_args:
+      embeddings_size: 1376
+      hidden_layer_sizes: [768,256]
+      dropout_rate: 0.1
+      num_classes: 14
+  criterion: # torch.nn.BCEWithLogitsLoss
+    class_path: torch.nn.BCEWithLogitsLoss
+  weight_decay: 0.0005
+  prediction_on: "test"
+  save_probabilities_path: ./results/vector_mimic_disease_classification_47/probabilities
