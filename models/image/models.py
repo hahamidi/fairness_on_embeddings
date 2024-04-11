@@ -30,6 +30,7 @@ class DensNetWithHead(nn.Module):
         # Output layer
         layers.append(nn.Linear(input_size, num_classes))
 
+
         # Assemble the custom head
         self.custom_head = nn.Sequential(*layers)
 

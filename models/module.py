@@ -11,8 +11,8 @@ class CLS(L.LightningModule):
 
     def __init__(self, model: nn.Module,
                  criterion=nn.CrossEntropyLoss(),
-                 lr = 0.0005,
-                 weight_decay = 0.0005 ,
+                 lr = 0.0001,
+                 weight_decay = 0.000001 ,
                  prediction_on = "test",
                  save_probabilities_path = None):
         super().__init__()
@@ -180,7 +180,7 @@ class CLS(L.LightningModule):
             elif isinstance(self.criterion, nn.BCEWithLogitsLoss):
                 stage_data["probabilities"].extend(torch.sigmoid(output).data.cpu().numpy())
             else:
-                warnings.warn(f"Loss is not supported for {stage} step. No probabilities will be returned.")
+                warnings.warn(f"BCE LOSS.")
                 stage_data["probabilities"].extend(output.data.cpu().numpy())
         else:
             warnings.warn(f"Invalid stage: {stage}. No data will be appended.")

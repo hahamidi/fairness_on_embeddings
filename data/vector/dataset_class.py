@@ -117,7 +117,7 @@ class VectorXrayDataset(Dataset):
 
     def __len__(self):
             return self.dataset_size
-class VectorXraySensitive(Dataset):
+class VectorXraySensitiveDataset(Dataset):
     def __init__(self, dataframe_path, path_vector, finding="any", sensitive_label="gender", sensitive_values=['M', 'F']):
         self.dataframe = pd.read_csv(dataframe_path)
         # drop rows with values not in sensitive_values
@@ -152,6 +152,6 @@ if __name__ == "__main__":
     print(dataset[0])
     dataset2 = VectorXrayDataset(dataframe_path="./dataset/chexpert/cxp_train_df.csv", path_vector="/fs01/home/hhamidi/diff/fariness_embedding_second_submit/fairness_on_embeddings/dataset/vector_embeddings/", finding="any")
     print(dataset2[10])
-    dataset3 = VectorXraySensitive(dataframe_path="./dataset/mimic/mimic_test_df.csv", path_vector="/fs01/home/hhamidi/diff/fariness_embedding_second_submit/fairness_on_embeddings/dataset/vector_embeddings/", finding="any",
+    dataset3 = VectorXraySensitiveDataset(dataframe_path="./dataset/mimic/mimic_test_df.csv", path_vector="/fs01/home/hhamidi/diff/fariness_embedding_second_submit/fairness_on_embeddings/dataset/vector_embeddings/", finding="any",
     sensitive_label="gender", sensitive_values=['M', 'F'])
     print(dataset3[1])
