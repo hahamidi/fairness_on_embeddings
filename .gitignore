@@ -1,0 +1,10 @@
+/results/
+/dataset/
+/*.log/
+/sbatch/
+/configs/
+/predictions/
+/previous logs/
+
+
+

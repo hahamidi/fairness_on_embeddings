@@ -64,7 +64,7 @@ data: # data.module.DataModule
 
   batch_size: 48
   num_workers: 38
-  prediction_on: "test"
+  prediction_on: "val"
 
 
 model: # models.module.CLS
@@ -73,10 +73,11 @@ model: # models.module.CLS
     init_args:
       embeddings_size: 1376
       hidden_layer_sizes: [768,256]
-      dropout_rate: 0.1
+      dropout_rate: 0.3
       num_classes: 14
+  lr : 0.0001
   criterion: # torch.nn.BCEWithLogitsLoss
     class_path: torch.nn.BCEWithLogitsLoss
-  weight_decay: 0.0005
-  prediction_on: "test"
+  weight_decay: 0.00001
+  prediction_on: "val"
   save_probabilities_path: ./results/vector_all_disease_classification_31/probabilities
