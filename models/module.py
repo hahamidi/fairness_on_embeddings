@@ -117,7 +117,12 @@ class CLS(L.LightningModule):
 
     def on_validation_epoch_end(self):
             
+            lr = self.trainer.optimizers[0].param_groups[0]['lr']
+            print("Learning rate = {}".format(lr))
             avg_loss = np.mean(self.stages["val"]["loss"])
+            # print(self.stages["val"]["probabilities"])
+            # print(self.stages["val"]["labels"])
+
     
             _,_,class_auc = calculate_roc_auc(self.stages["val"]["probabilities"], self.stages["val"]["labels"])
             print(class_auc)
@@ -146,6 +151,7 @@ class CLS(L.LightningModule):
             print("-"*50)
             print("Validation loss = {}".format(avg_loss))
             print("Average AUC = {}".format(average_auc))
+            self.log('val_mean_loss', avg_loss, prog_bar=True, logger=True)
     
     
     
@@ -205,5 +211,14 @@ class CLS(L.LightningModule):
 
 
     def configure_optimizers(self):
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr ,betas=(0.9, 0.999), weight_decay=self.weight_decay)
+        lr_scheduler = {
+            'scheduler': torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3, min_lr=1e-6),
+            'monitor': 'val_mean_loss',  # Name of the logged validation metric to monitor
+            'interval': 'epoch',
+            'frequency': 1,
+            'strict': True,
+            'name': 'reduce_lr_on_plateau'
+        }
+        return {'optimizer': optimizer, 'lr_scheduler': lr_scheduler}
         
-        return torch.optim.Adam(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)

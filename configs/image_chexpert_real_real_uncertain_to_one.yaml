@@ -1,11 +1,10 @@
 seed_everything: 19
 
 trainer:
-
-  default_root_dir: ./results/image_disease_classification_19
-  accelerator: cuda
-  devices: 1
-  log_every_n_steps: 1
+  default_root_dir: ./results/image_chexpert_real_real
+  accelerator: gpu
+  devices: 1  # Change this number to the number of GPUs you have
+  # strategy: ddp
   max_epochs: 100
 
   callbacks:
@@ -20,17 +19,23 @@ trainer:
         monitor: 'val_loss'
         mode: 'min'  # or 'max' depending on your metric
         save_top_k: 20  # save only the best checkpoint
-        dirpath: './results/image_disease_classification_19/checkpoints/'
+        dirpath: './results/image_chexpert_real_real/checkpoints/'
         filename: 'best_val_loss-{epoch:02d}-{val_loss:.4f}'
 
   
 
 data: # data.moudle.DataModule
   train_dataset:
-    class_path: data.image.dataset_class.ImageDataset_all
+    class_path: data.image.dataset_class.Chexpert
     init_args:
-      dataframe_path: ./datasets/train_df.csv
-      path_image: /datasets/mimic-cxr/physionet.org/files/mimic-cxr-jpg/2.0.0/files
+      dataframe_path: /fs01/home/hhamidi/projects/stable-diffusion/data/csv_files/train.csv
+      path_image: /datasets/chexpert/
+      #  MAPPING = {-1: -1, 0: 0, 1: 1, np.nan: 0}
+      MAPPING:
+        -1: 1
+        0: 0
+        1: 1
+        !!float 'NaN': 0 # np.nan
       transform:
         class_path: torchvision.transforms.Compose
         init_args:
@@ -41,56 +46,58 @@ data: # data.moudle.DataModule
               degrees: 15
           - class_path: torchvision.transforms.Resize
             init_args:
-              size: 256
-          - class_path: torchvision.transforms.CenterCrop
-            init_args:
-              size: 256
+              size: [224,224]
           - class_path: torchvision.transforms.ToTensor
           - class_path: torchvision.transforms.Normalize
             init_args:
               mean: [0.485, 0.456, 0.406]
               std: [0.229, 0.224, 0.225]
+
   val_dataset:
-    class_path: data.image.dataset_class.ImageDataset_all
+    class_path: data.image.dataset_class.Chexpert
     init_args:
-      dataframe_path: ./datasets/val_df.csv
-      path_image: /datasets/mimic-cxr/physionet.org/files/mimic-cxr-jpg/2.0.0/files
+      dataframe_path: /fs01/home/hhamidi/projects/stable-diffusion/data/csv_files/val_from_train.csv
+      path_image: /datasets/chexpert/
+      MAPPING:
+        -1: 1
+        0: 0
+        1: 1
+        !!float 'NaN': 0 # np.nan
       transform:
         class_path: torchvision.transforms.Compose
         init_args:
           transforms:
           - class_path: torchvision.transforms.Resize
             init_args:
-              size: 256
-          - class_path: torchvision.transforms.CenterCrop
-            init_args:
-              size: 256
+              size: [224,224]
           - class_path: torchvision.transforms.ToTensor
           - class_path: torchvision.transforms.Normalize
             init_args:
               mean: [0.485, 0.456, 0.406]
               std: [0.229, 0.224, 0.225]
   test_dataset:
-    class_path: data.image.dataset_class.ImageDataset_all
+    class_path: data.image.dataset_class.Chexpert
     init_args:
-      dataframe_path: ./datasets/test_df.csv
-      path_image: /datasets/mimic-cxr/physionet.org/files/mimic-cxr-jpg/2.0.0/files
+      dataframe_path: /fs01/home/hhamidi/projects/stable-diffusion/data/csv_files/val.csv
+      path_image: /datasets/chexpert/
+      MAPPING:
+        -1: 1
+        0: 0
+        1: 1
+        !!float 'NaN': 0 # np.nan
       transform:
         class_path: torchvision.transforms.Compose
         init_args:
           transforms:
           - class_path: torchvision.transforms.Resize
             init_args:
-              size: 256
-          - class_path: torchvision.transforms.CenterCrop
-            init_args:
-              size: 256
+              size: [224,224]
           - class_path: torchvision.transforms.ToTensor
           - class_path: torchvision.transforms.Normalize
             init_args:
               mean: [0.485, 0.456, 0.406]
               std: [0.229, 0.224, 0.225]
-  batch_size: 48
+  batch_size: 32
   num_workers: 32
   prediction_on: "test"
 
@@ -104,6 +111,9 @@ model: # models.module.CLS
       num_classes: 14
   criterion: # torch.nn.BCEWithLogitsLoss
     class_path: torch.nn.BCEWithLogitsLoss
-  weight_decay: 0.0005
+  weight_decay: 0.01
   prediction_on: "test"
-  save_probabilities_path: ./results/image_disease_classification_19/probabilities
+  save_probabilities_path: ./results/image_chexpert_real_real/probabilities/
+  lr: 0.0001
+
+  #CUDA_VISIBLE_DEVICES=1 python main.py fit -c ./configs/image_chexpert_real_real_uncertain_to_one.yaml
