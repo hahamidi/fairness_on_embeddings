@@ -5,11 +5,14 @@ import torchvision.models as models
 from torchvision.models import vit_b_16
 
 class DensNetWithHead(nn.Module):
-    def __init__(self,  hidden_layer_sizes, dropout_rate, num_classes):
+    def __init__(self,  hidden_layer_sizes, dropout_rate, num_classes,freeze_backbone = False):
         super(DensNetWithHead, self).__init__()
 
         # Pretrained DenseNet backbone
         self.backbone = models.densenet121(pretrained=True)
+        if freeze_backbone:
+            for param in self.backbone.parameters():
+                param.requires_grad = False
         num_features = self.backbone.classifier.in_features
 
         # Remove the last classification layer of the backbone

@@ -14,7 +14,8 @@ class CLS(L.LightningModule):
                  lr = 0.0005,
                  weight_decay = 0.0005 ,
                  prediction_on = "test",
-                 save_probabilities_path = None):
+                 save_probabilities_path = None,
+                 ):
         super().__init__()
         print("CLS init", "*"*50)
         self.model = model
