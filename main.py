@@ -4,7 +4,7 @@ from models.module import CLS
 
 
 def cli_main():
-    cli = LightningCLI(CLS, DataModule)
+    cli = LightningCLI(CLS, DataModule,parser_kwargs={"parser_mode": "omegaconf"})
     # note: don't call fit!!
 
 

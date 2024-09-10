@@ -14,8 +14,12 @@ class DataModule(L.LightningDataModule):
                     test_dataset: Dataset,
                     batch_size=64,
                     num_workers=4,
-                    prediction_on = "test"):
+                    prediction_on = "test",
+                    global_variable=None):
             super().__init__()
+            print('-'*20)
+            print(f'Global variables for data are {global_variable}')
+            print('-'*20)
             
             self.train_dataset = train_dataset
             self.val_dataset = val_dataset

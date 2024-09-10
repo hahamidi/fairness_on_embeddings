@@ -244,10 +244,13 @@ class CheXpert_Advanced(Dataset):
                  verbose=True,
                  upsampling_cols=['Cardiomegaly', 'Consolidation'],
                  train_cols=['Cardiomegaly', 'Edema', 'Consolidation', 'Atelectasis',  'Pleural Effusion'],
-                 mode='train'):
+                 mode='train',
+                 split_size=1.0):
         
     
         # load data from csv
+        print(image_root_path)
+        print ('Loading data from %s...'%csv_path)
         self.df = pd.read_csv(csv_path)
         self.df['Path'] = self.df['Path'].str.replace('CheXpert-v1.0-small/', '')
         self.df['Path'] = self.df['Path'].str.replace('CheXpert-v1.0/', '')
@@ -255,6 +258,11 @@ class CheXpert_Advanced(Dataset):
             self.df = self.df[self.df['Frontal/Lateral'] == 'Frontal']  
         if 'train/val/test' in self.df.columns:
             self.df = self.df[self.df['train/val/test'] == mode]
+       
+        if split_size < 1.0:
+            self.df = self.df.sample(frac=split_size, random_state=seed)
+            print(f'data set splited with size of {split_size}')
+        
         
             
         # upsample selected cols
@@ -278,6 +286,7 @@ class CheXpert_Advanced(Dataset):
             else:
                 self.df[col].fillna(0, inplace=True)
         
+        
         self._num_images = len(self.df)
         
         # 0 --> -1
@@ -292,6 +301,7 @@ class CheXpert_Advanced(Dataset):
             self.df = self.df.iloc[data_index]
         
         
+        
         assert class_index in [-1, 0, 1, 2, 3, 4], 'Out of selection!'
         assert image_root_path != '', 'You need to pass the correct location for the dataset!'
 
@@ -300,15 +310,21 @@ class CheXpert_Advanced(Dataset):
             self.select_cols = train_cols
             self.value_counts_dict = {}
             for class_key, select_col in enumerate(train_cols):
+
                 class_value_counts_dict = self.df[select_col].value_counts().to_dict()
+  
+
+
+
                 self.value_counts_dict[class_key] = class_value_counts_dict
+ 
         else:       # 1 class
             self.select_cols = [train_cols[class_index]]  # this var determines the number of classes
             self.value_counts_dict = self.df[self.select_cols[0]].value_counts().to_dict()
-        
         self.mode = mode
         self.class_index = class_index
         self.image_size = image_size
+
         
         self._images_list =  [image_root_path+path for path in self.df['Path'].tolist()]
         if class_index != -1:
@@ -332,6 +348,7 @@ class CheXpert_Advanced(Dataset):
                 print ('-'*30)
                 imratio_list = []
                 for class_key, select_col in enumerate(train_cols):
+                    print (self.value_counts_dict[class_key], self.value_counts_dict[class_key])
                     imratio = self.value_counts_dict[class_key][1]/(self.value_counts_dict[class_key][0]+self.value_counts_dict[class_key][1])
                     imratio_list.append(imratio)
                     print('Found %s images in total, %s positive images, %s negative images'%(self._num_images, self.value_counts_dict[class_key][1], self.value_counts_dict[class_key][0] ))
