@@ -1,7 +1,8 @@
 seed_everything: 19
 
+
 trainer:
-  default_root_dir: ./results/chexpert_real_syn/
+  default_root_dir: ./results/mimic_base_NoFinding_syn_age/
   accelerator: gpu
   devices: 1  # Change this number to the number of GPUs you have
   # strategy: ddp
@@ -12,13 +13,13 @@ trainer:
   - class_path: lightning.pytorch.callbacks.EarlyStopping
     init_args:
         monitor: 'val_loss'
-        patience: 10
+        patience: 4
         mode: 'min'  # or 'max' depending on your metric
   - class_path: lightning.pytorch.callbacks.ModelCheckpoint
     init_args:
         monitor: 'val_loss'
         mode: 'min'  # or 'max' depending on your metric
-        save_top_k: 20  # save only the best checkpoint
+        save_top_k: 3  # save only the best checkpoint
         dirpath: ${trainer.default_root_dir}checkpoints/
         filename: 'best_val_loss-{epoch:02d}-{val_loss:.4f}'
 
@@ -26,88 +27,73 @@ trainer:
 
 data: # data.moudle.DataModule
   global_variable:
-    image_root_path: /local/data/physionet.org/files/CheXpert-v1.0/
-    csv_root: /local/home/hhamidi/project/med-stable-diffusion/data/csv/chexpert/chexpert
-    image_root_path_syn: /local/data/syn_samples/sample_from_chexpert_train_label_last2/
-    csv_root_syn: /local/data/syn_samples/sample_from_chexpert_train_label_last2/
+    image_root_path: /datasets/mimic/resized/mimic-cxr-jpg/2.0.0/
+    image_root_path_syn: /datasets/chexpert/chexpert_diff/chexpert_sample/
+    # for prediction process or training process?
+    use_frontal: False
+    shuffle: False
+    prediction_on: "test"
+
   train_dataset:
     class_path: torch.utils.data.ConcatDataset
     init_args:
       datasets:
-        - class_path: data.image.dataset_class.CheXpert_Advanced
-          init_args:
-            csv_path: ${data.global_variable.csv_root}_train.csv
+      - class_path: data.image.dataset_class.AdvancedCLS
+        init_args:
+            csv_path: /home/hhamidi/clean/per_storage/csvs/mimic/mimic_train_fairness.csv
             image_root_path: ${data.global_variable.image_root_path}
             train_cols:
-              - Cardiomegaly
-              - Edema
-              - Consolidation
-              - Atelectasis
-              - Pleural Effusion
               - No Finding
-            use_upsampling: True
-            use_frontal: True
+            use_upsampling: False
+            shuffle: ${data.global_variable.shuffle}
+            use_frontal: ${data.global_variable.use_frontal}
             image_size: 224
             mode: train
             class_index: -1
-        - class_path: data.image.dataset_class.CheXpert_Advanced
-          init_args:
-            csv_path: ${data.global_variable.csv_root_syn}samples.csv
+      - class_path: data.image.dataset_class.AdvancedCLS
+        init_args:
+            csv_path: /home/hhamidi/clean/per_storage/csvs/mimic/syn_all_fiding_young.csv
             image_root_path: ${data.global_variable.image_root_path_syn}
             train_cols:
-              - Cardiomegaly
-              - Edema
-              - Consolidation
-              - Atelectasis
-              - Pleural Effusion
               - No Finding
-            use_upsampling: True
-            use_frontal: True
+            use_upsampling: False
+            shuffle: ${data.global_variable.shuffle}
+            use_frontal: False
             image_size: 224
             mode: train
             class_index: -1
-            split_size: 1.0
-
-
+            ratio: 1.0
   val_dataset:
-    class_path: data.image.dataset_class.CheXpert_Advanced
+    class_path: data.image.dataset_class.AdvancedCLS
     init_args:
-        csv_path: ${data.global_variable.csv_root}_val.csv
+        csv_path: /home/hhamidi/clean/per_storage/csvs/mimic/mimic_val_fairness.csv
         image_root_path: ${data.global_variable.image_root_path}
         train_cols:
-          - Cardiomegaly
-          - Edema
-          - Consolidation
-          - Atelectasis
-          - Pleural Effusion
           - No Finding
         use_upsampling: False
-        use_frontal: True
+        shuffle: ${data.global_variable.shuffle}
+        use_frontal: ${data.global_variable.use_frontal}
         image_size: 224
-        mode: test
+        mode: val
         class_index: -1
   test_dataset:
-    class_path: data.image.dataset_class.CheXpert_Advanced
+    class_path: data.image.dataset_class.AdvancedCLS
     init_args:
-        csv_path: ${data.global_variable.csv_root}_test.csv
+        csv_path: /home/hhamidi/clean/per_storage/csvs/mimic/mimic_test_fairness.csv
         image_root_path: ${data.global_variable.image_root_path}
         train_cols:
-          - Cardiomegaly
-          - Edema
-          - Consolidation
-          - Atelectasis
-          - Pleural Effusion
           - No Finding
         use_upsampling: False
-        use_frontal: True
+        shuffle: ${data.global_variable.shuffle}
+        use_frontal: ${data.global_variable.use_frontal}
         image_size: 224
         mode: test
         class_index: -1
 
 
   batch_size: 32
-  num_workers: 16
-  prediction_on: "test"
+  num_workers: 20
+  prediction_on: ${data.global_variable.prediction_on}
 
 
 model: # models.module.CLS
@@ -116,12 +102,12 @@ model: # models.module.CLS
     init_args:
       hidden_layer_sizes: [768,128]
       dropout_rate: 0.1
-      num_classes: 6
+      num_classes: 1
   criterion: # torch.nn.BCEWithLogitsLoss
     class_path: torch.nn.BCEWithLogitsLoss
   weight_decay: 0.0
-  prediction_on: "test"
+  prediction_on: ${data.global_variable.prediction_on}
   save_probabilities_path: ${trainer.default_root_dir}probabilities/
   lr: 0.0001
 
-  #CUDA_VISIBLE_DEVICES=1  python main.py fit -c /local/home/hhamidi/fairness_on_embeddings/configs/chexpert_all.yaml
+  # CUDA_VISIBLE_DEVICES=3 python main.py fit -c ./configs/mimic_base_Consolidation.yaml

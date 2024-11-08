@@ -72,7 +72,7 @@ class CLS(L.LightningModule):
 
         
     
-    def on_predict_epoch_end(self,results):
+    def on_predict_epoch_end(self):
 
         # Assuming self.stages[self.prediction_on]["loss"] is a PyTorch tensor on GPU
         # Assuming self.stages[self.prediction_on]["loss"] is a list of PyTorch tensors on GPU
